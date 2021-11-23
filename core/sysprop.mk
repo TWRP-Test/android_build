@@ -29,15 +29,17 @@ POST_PROCESS_PROPS := $(HOST_OUT_EXECUTABLES)/post_process_props$(HOST_EXECUTABL
 # $(1): Partition name
 # $(2): Output file name
 define generate-common-build-props
+    bash -c '\
+    $(or $(PRODUCT_BUILD_PROP_OVERRIDES),:);\
     echo "####################################" >> $(2);\
     echo "# from generate-common-build-props" >> $(2);\
     echo "# These properties identify this partition image." >> $(2);\
     echo "####################################" >> $(2);\
     echo "ro.product.$(1).brand=$(PRODUCT_BRAND)" >> $(2);\
-    echo "ro.product.$(1).device=$(TARGET_DEVICE)" >> $(2);\
+    echo "ro.product.$(1).device=$${TARGET_DEVICE:-$(TARGET_DEVICE)}" >> $(2);\
     echo "ro.product.$(1).manufacturer=$(PRODUCT_MANUFACTURER)" >> $(2);\
-    echo "ro.product.$(1).model=$(PRODUCT_MODEL)" >> $(2);\
-    echo "ro.product.$(1).name=$(TARGET_PRODUCT)" >> $(2);\
+    echo "ro.product.$(1).model=$${PRODUCT_MODEL:-$(PRODUCT_MODEL)}" >> $(2);\
+    echo "ro.product.$(1).name=$${TARGET_PRODUCT:-$(TARGET_PRODUCT)}" >> $(2);\
     if [ -n "$(strip $(PRODUCT_MODEL_FOR_ATTESTATION))" ]; then \
         echo "ro.product.model_for_attestation=$(PRODUCT_MODEL_FOR_ATTESTATION)" >> $(2);\
     fi; \
@@ -80,6 +82,7 @@ define generate-common-build-props
     echo "ro.$(1).build.version.release_or_codename=$(PLATFORM_VERSION)" >> $(2);\
     echo "ro.$(1).build.version.sdk=$(PLATFORM_SDK_VERSION)" >> $(2);\
     echo "ro.$(1).build.version.sdk_full=$(PLATFORM_SDK_VERSION_FULL)" >> $(2);\
+    ';\
 
 endef
 
