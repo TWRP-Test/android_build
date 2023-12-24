@@ -500,7 +500,7 @@ function _lunch_meat()
     # Note this is the string "release", not the value of the variable.
     export TARGET_BUILD_TYPE=release
 
-    local prebuilt_kernel=$(get_build_var TARGET_PREBUILT_KERNEL)
+    local prebuilt_kernel=$(_get_build_var_cached TARGET_PREBUILT_KERNEL)
     if [ -z "$prebuilt_kernel" ]; then
       export INLINE_KERNEL_BUILDING=true
     else
