@@ -359,7 +359,6 @@ function addcompletions()
     local completion_files=(
       packages/modules/adb/adb.bash
       system/core/fastboot/fastboot.bash
-      tools/asuite/asuite.sh
     )
     # Completion can be disabled selectively to allow users to use non-standard completion.
     # e.g.
