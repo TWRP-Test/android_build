@@ -588,7 +588,7 @@ function lunch()
         product=$1
         release=$2
         if [[ -z $release ]]; then
-            release=trunk_staging
+            release=bp2a
         fi
         variant=$3
         if [[ -z $variant ]]; then
