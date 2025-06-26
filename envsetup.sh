@@ -435,6 +435,23 @@ function print_lunch_menu()
     echo
 }
 
+# check to see if the supplied product is one we can build
+function check_product()
+{
+    local T=$(gettop)
+    if [ ! "$T" ]; then
+        echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
+        return
+    fi
+        TARGET_PRODUCT=$1 \
+        TARGET_RELEASE=$2 \
+        TARGET_BUILD_VARIANT= \
+        TARGET_BUILD_TYPE= \
+        TARGET_BUILD_APPS= \
+        _get_build_var_cached TARGET_DEVICE > /dev/null
+    # hide successful answers, but allow the errors to show
+}
+
 function _lunch_meat()
 {
     local product=$1
