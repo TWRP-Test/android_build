@@ -92,6 +92,7 @@ cc_library {
     ],
     host_supported: true,
     vendor_available: true,
+    recovery_available: true,
     product_available: true,
     apex_available: [
         "//apex_available:platform",
