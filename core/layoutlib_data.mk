@@ -77,18 +77,14 @@ $(call dist-for-goals,layoutlib,$(LAYOUTLIB_BUILD_PROP)/layoutlib-build.prop:lay
 LAYOUTLIB_RES := $(call intermediates-dir-for,PACKAGING,layoutlib-res,HOST,COMMON)
 LAYOUTLIB_RES_FILES := $(shell find frameworks/base/core/res/res -type f -not -path 'frameworks/base/core/res/res/values-m[nc]c*' | sort)
 EMULATED_OVERLAYS_FILES := $(shell find frameworks/base/packages/overlays/*/res/ | sort)
-DEVICE_OVERLAYS_FILES := $(shell find device/generic/goldfish/phone/overlay/frameworks/base/packages/overlays/*/AndroidOverlay/res/ | sort)
-$(LAYOUTLIB_RES)/layoutlib-res.zip: $(SOONG_ZIP) $(HOST_OUT_EXECUTABLES)/aapt2 $(LAYOUTLIB_RES_FILES) $(EMULATED_OVERLAYS_FILES) $(DEVICE_OVERLAYS_FILES)
+$(LAYOUTLIB_RES)/layoutlib-res.zip: $(SOONG_ZIP) $(HOST_OUT_EXECUTABLES)/aapt2 $(LAYOUTLIB_RES_FILES) $(EMULATED_OVERLAYS_FILES)
 	rm -rf $@
 	echo $(LAYOUTLIB_RES_FILES) > $(LAYOUTLIB_RES)/filelist_res.txt
 	$(SOONG_ZIP) -C frameworks/base/core/res -l $(LAYOUTLIB_RES)/filelist_res.txt -o $(LAYOUTLIB_RES)/temp_res.zip
 	echo $(EMULATED_OVERLAYS_FILES) > $(LAYOUTLIB_RES)/filelist_emulated_overlays.txt
 	$(SOONG_ZIP) -C frameworks/base/packages -l $(LAYOUTLIB_RES)/filelist_emulated_overlays.txt -o $(LAYOUTLIB_RES)/temp_emulated_overlays.zip
-	echo $(DEVICE_OVERLAYS_FILES) > $(LAYOUTLIB_RES)/filelist_device_overlays.txt
-	$(SOONG_ZIP) -C device/generic/goldfish/phone/overlay/frameworks/base/packages -l $(LAYOUTLIB_RES)/filelist_device_overlays.txt -o $(LAYOUTLIB_RES)/temp_device_overlays.zip
 	rm -rf $(LAYOUTLIB_RES)/data && unzip -q -d $(LAYOUTLIB_RES)/data $(LAYOUTLIB_RES)/temp_res.zip
 	unzip -q -d $(LAYOUTLIB_RES)/data $(LAYOUTLIB_RES)/temp_emulated_overlays.zip
-	unzip -q -d $(LAYOUTLIB_RES)/data $(LAYOUTLIB_RES)/temp_device_overlays.zip
 	rm -rf $(LAYOUTLIB_RES)/compiled && mkdir $(LAYOUTLIB_RES)/compiled && $(HOST_OUT_EXECUTABLES)/aapt2 compile $(LAYOUTLIB_RES)/data/res/**/*.9.png -o $(LAYOUTLIB_RES)/compiled
 	printf '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.google.android.layoutlib" />' > $(LAYOUTLIB_RES)/AndroidManifest.xml
 	$(HOST_OUT_EXECUTABLES)/aapt2 link -R $(LAYOUTLIB_RES)/compiled/* -o $(LAYOUTLIB_RES)/compiled.apk --manifest $(LAYOUTLIB_RES)/AndroidManifest.xml
@@ -163,14 +159,9 @@ $(LAYOUTLIB_SBOM)/sbom-metadata.csv:
 	  echo $(_path),,,,,,Y,$f,,, >> $@; \
 	)
 
-	$(foreach f,$(DEVICE_OVERLAYS_FILES), \
-	  $(eval _path := $(subst device/generic/goldfish/phone/overlay/frameworks/base/packages,data,$f)) \
-	  echo $(_path),,,,,,Y,$f,,, >> $@; \
-	)
-
 .PHONY: layoutlib-sbom
 layoutlib-sbom: $(LAYOUTLIB_SBOM)/layoutlib.spdx.json
-$(LAYOUTLIB_SBOM)/layoutlib.spdx.json: $(PRODUCT_OUT)/always_dirty_file.txt $(GEN_SBOM) $(LAYOUTLIB_SBOM)/sbom-metadata.csv $(_layoutlib_font_config_files) $(_layoutlib_fonts_files) $(LAYOUTLIB_BUILD_PROP)/layoutlib-build.prop $(_layoutlib_keyboard_files) $(_layoutlib_hyphen_files) $(LAYOUTLIB_RES_FILES) $(EMULATED_OVERLAYS_FILES) $(DEVICE_OVERLAYS_FILES)
+$(LAYOUTLIB_SBOM)/layoutlib.spdx.json: $(PRODUCT_OUT)/always_dirty_file.txt $(GEN_SBOM) $(LAYOUTLIB_SBOM)/sbom-metadata.csv $(_layoutlib_font_config_files) $(_layoutlib_fonts_files) $(LAYOUTLIB_BUILD_PROP)/layoutlib-build.prop $(_layoutlib_keyboard_files) $(_layoutlib_hyphen_files) $(LAYOUTLIB_RES_FILES) $(EMULATED_OVERLAYS_FILES)
 	rm -rf $@
 	$(GEN_SBOM) --output_file $@ --metadata $(LAYOUTLIB_SBOM)/sbom-metadata.csv --build_version $(BUILD_FINGERPRINT_FROM_FILE) --product_mfr "$(PRODUCT_MANUFACTURER)" --module_name "layoutlib" --json
 
