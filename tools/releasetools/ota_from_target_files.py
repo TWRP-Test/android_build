@@ -1421,6 +1421,11 @@ def main(argv):
   else:
     OPTIONS.info_dict = common.LoadInfoDict(args[0])
 
+  target_info = common.BuildInfo(OPTIONS.info_dict, OPTIONS.oem_dicts)
+  if not target_info.supports_ublk:
+    logger.info("Target build does not support ublk, disabling ublk")
+    OPTIONS.disable_ublk = True
+
   if OPTIONS.wipe_user_data:
     if not OPTIONS.vabc_downgrade:
       logger.info("Detected downgrade/datawipe OTA."
