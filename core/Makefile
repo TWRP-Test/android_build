@@ -2622,6 +2622,12 @@ ifneq ($(recovery_root_private),)
 recovery_root_deps := $(shell find $(recovery_root_private) -type f)
 endif
 
+# Overlay paths that replace baseline symlinks (rsync cannot turn a stale
+# non-empty dir back into a symlink); drop them before the baseline rsync.
+recovery_root_overlay_paths := $(strip $(foreach item,$(recovery_root_private), \
+  $(foreach f,$(shell cd $(dir $(item)) && find $(notdir $(item)) -mindepth 1), \
+  $(TARGET_RECOVERY_OUT)/$(f))))
+
 ifndef TARGET_PRIVATE_RES_DIRS
 TARGET_PRIVATE_RES_DIRS := $(wildcard $(TARGET_DEVICE_DIR)/recovery/res)
 endif
@@ -2794,6 +2800,8 @@ $(INTERNAL_RECOVERY_RAMDISK_FILES_TIMESTAMP): $(MKBOOTFS) \
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/sdcard $(TARGET_RECOVERY_ROOT_OUT)/tmp
 	# Copying baseline ramdisk...
 	# Use rsync because "cp -Rf" fails to overwrite broken symlinks on Mac.
+	# Drop stale overlay copies that replace baseline symlinks.
+	$(if $(recovery_root_overlay_paths),for p in $(recovery_root_overlay_paths); do r=$${p#$(TARGET_RECOVERY_ROOT_OUT)/}; if [ -L "$(TARGET_ROOT_OUT)/$$r" ]; then rm -rf "$$p"; fi; done,true)
 	rsync -a --exclude=sdcard $(IGNORE_RECOVERY_SEPOLICY) $(IGNORE_CACHE_LINK) $(TARGET_ROOT_OUT) $(TARGET_RECOVERY_OUT)
 	# Modifying ramdisk contents...
 	ln -sf /system/bin/init $(TARGET_RECOVERY_ROOT_OUT)/init
