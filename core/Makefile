@@ -2817,7 +2817,9 @@ $(INTERNAL_RECOVERY_RAMDISK_FILES_TIMESTAMP): $(MKBOOTFS) \
 	find $(TARGET_RECOVERY_ROOT_OUT) -maxdepth 1 -name 'init*.rc' -type f -not -name "init.recovery.*.rc" | xargs rm -f
 	cp $(TARGET_ROOT_OUT)/init.recovery.*.rc $(TARGET_RECOVERY_ROOT_OUT)/ 2> /dev/null || true # Ignore error when the src file doesn't exist.
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/res
-	rm -rf $(TARGET_RECOVERY_ROOT_OUT)/res/*
+	# Preserve resources installed by modules such as prebuilt_res. They are
+	# prerequisites of this rule; deleting them here removes them from the image.
+	# Use installclean to remove stale installed resources before packaging.
 	cp -rf $(recovery_resources_common)/* $(TARGET_RECOVERY_ROOT_OUT)/res
 	$(foreach recovery_text_file,$(generated_recovery_text_files), \
 	  cp -rf $(recovery_text_file) $(TARGET_RECOVERY_ROOT_OUT)/res/images/ &&) true
