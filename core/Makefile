@@ -954,6 +954,17 @@ event-log-tags: $(event_log_tags_file)
 
 ALL_DEFAULT_INSTALLED_MODULES += $(event_log_tags_file)
 
+# Recovery needs the merged tag map without mounting the system partition.
+# Include it in the installed file list used by recovery image packaging.
+ifdef BUILDING_RECOVERY_IMAGE
+recovery_event_log_tags := $(TARGET_RECOVERY_ROOT_OUT)/system/etc/event-log-tags
+$(eval $(call copy-one-file,$(event_log_tags_file),$(recovery_event_log_tags)))
+$(eval $(call declare-0p-target,$(recovery_event_log_tags)))
+
+event-log-tags: $(recovery_event_log_tags)
+ALL_DEFAULT_INSTALLED_MODULES += $(recovery_event_log_tags)
+endif
+
 # Initialize INSTALLED_FILES_OUTSIDE_IMAGES with the list of all device files,
 # files installed in images will be filtered out later.
 INSTALLED_FILES_OUTSIDE_IMAGES := $(filter-out \
